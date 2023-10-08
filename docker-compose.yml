@@ -1,0 +1,63 @@
+version: '3.1'
+services:
+  api:
+    container_name: api
+    image: api:latest
+    restart: always
+    # ports:
+    #   - 6500:5000
+    volumes:
+      - /home/vagrant/student-list/simple_api/student_age.json:/data/student_age.json
+    networks:
+      - student_list      
+
+  web_api:
+    container_name: web_api
+    image: php:apache
+    restart: always
+    depends_on:
+      - api
+    environment:
+      USERNAME: "toto"
+      PASSWORD: "python"
+    volumes:
+      - ./website:/var/www/html
+    ports:
+      - 8080:80
+    networks:
+      - student_list
+
+  registry:
+    container_name: registry
+    image: registry:2
+    restart: always
+    ports:
+     - 5000:5000
+    networks:
+      - student_list 
+
+  registry-ui:
+    depends_on:
+      - registry
+    container_name: registry-ui
+    image: joxit/docker-registry-ui
+    restart: always
+    ports:
+     - 80:80
+    networks:
+      - student_list 
+    environment:
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE="PATERNE ARTHUR"
+      - DELETE_IMAGES=true
+      - SHOW_CONTENT_DIGEST=true
+      - NGINX_PROXY_PASS_URL=http://registry-server:5000
+      - SHOW_CATALOG_NB_TAGS=true
+      - CATALOG_MIN_BRANCHES=1
+      - CATALOG_MAX_BRANCHES=1
+      - TAGLIST_PAGE_SIZE=100
+      - REGISTRY_SECURED=false
+      - CATALOG_ELEMENTS_LIMIT=10
+            
+networks:
+  student_list:
